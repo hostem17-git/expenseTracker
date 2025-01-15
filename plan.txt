@@ -1,0 +1,28 @@
+Routes
+
+    ./whatsapp :
+        method   : POST
+        Body     : message
+        function : Split message into parts, add transaction to DB
+    
+    ./app/expenses
+        method   : Post
+        function : add new expenses
+
+    ./app/expenses 
+        method   : GET
+        function : get all expenses , add option for pagination, including filters for date, month and time.
+
+
+    ./app/expense/id : 
+        method   : PATCH/PUT
+        function : to update existing expenses
+
+    ./app/expense/id :
+        method   : DELETE
+        function : delete exisitng expense
+
+    ./app/auth
+        -> Add Login methods - OTP based ??? or google signin  ????
+
+
