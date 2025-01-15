@@ -1,28 +1,30 @@
 Routes
 
-    ./whatsapp :
+    ./api/whatsapp :
         method   : POST
         Body     : message
         function : Split message into parts, add transaction to DB
     
-    ./app/expenses
+    ./api/expenses
         method   : Post
         function : add new expenses
 
-    ./app/expenses 
+    ./api/expenses 
         method   : GET
         function : get all expenses , add option for pagination, including filters for date, month and time.
 
-
-    ./app/expense/id : 
+    ./api/expense/id : 
         method   : PATCH/PUT
         function : to update existing expenses
 
-    ./app/expense/id :
+    ./api/expense/id :
         method   : DELETE
         function : delete exisitng expense
 
-    ./app/auth
+    ./api/auth
         -> Add Login methods - OTP based ??? or google signin  ????
 
+    ./api/user
+        method   : PUT/PATCH
+        function : update user profiles ---- OTP confirmation ??
 
