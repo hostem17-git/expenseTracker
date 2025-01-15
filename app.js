@@ -4,19 +4,19 @@ const app = express();
 
 import ExpenseRouter from "./routes/expense.route.js";
 import WhatsappRouter from "./routes/whatsapp.route.js";
-
+import UserRouter from "./routes/user.route.js";
 
 app.use(express.json());
 
 const BASE_ROUTE = "/api/v1";
 const PORT = process.env.PORT || 3000;
 
+app.use(`${BASE_ROUTE}/expense`,ExpenseRouter);
+app.use(`${BASE_ROUTE}/whatsapp`,WhatsappRouter);
+app.use(`${BASE_ROUTE}/user`,UserRouter);
 
-app.use(`${BASE_ROUTE}/expense`,ExpenseRouter)
-app.use(`${BASE_ROUTE}/whatsapp`,WhatsappRouter)
-
+// Invalid path hit
 app.all("*",(req,res)=>{
-
     console.log("Invalid path hit");
     console.log(req.originalUrl);
     res.status(404).json({
