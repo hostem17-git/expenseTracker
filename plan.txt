@@ -3,7 +3,7 @@ Routes
     ./api/whatsapp :
         method   : POST
         Body     : message
-        function : Split message into parts, add transaction to DB
+        function : Split message into parts, add transaction to DB, if fail respond back on whatsapp
     
     ./api/expenses
         method   : Post
