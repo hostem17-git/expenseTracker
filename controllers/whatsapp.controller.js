@@ -3,9 +3,9 @@ import {extractAmount,normalizeName } from "../utils/strings.utils.js"
 export const AddExpense = async(req,res) =>{
     console.log("In controller");
     try{
-        // console.log("req");
-        // console.log(req);
-        // console.log("\n\n--------------------------------------------------------\n\n");
+        console.log("req");
+        console.log(req);
+        console.log("\n\n--------------------------------------------------------\n\n");
 
         console.log("req.body")
         console.log(req.body);
