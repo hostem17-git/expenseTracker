@@ -3,16 +3,17 @@ import {extractAmount,normalizeName } from "../utils/strings.utils.js"
 export const AddExpense = async(req,res) =>{
     console.log("In controller");
     try{
-        console.log("req");
-        console.log(req);
-        console.log("\n\n--------------------------------------------------------\n\n");
+        // console.log("req");
+        // console.log(req);
+        // console.log("\n\n--------------------------------------------------------\n\n");
 
         console.log("req.body")
         console.log(req.body);
         console.log("\n\n--------------------------------------------------------\n\n");
 
-
-        const inputText = req.body?.message;
+        const {Body} = req.query;
+        console.log("---------> message", Body);
+        const inputText = Body;
         console.log("Message");
         console.log(inputText);
         console.log("\n\n--------------------------------------------------------\n\n");
