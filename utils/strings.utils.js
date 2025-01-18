@@ -1,5 +1,5 @@
 // Normalize a string by removing spaces and converting to lowercase
-export const normalizeName = (name) => name.replace(/\s+/g, "").toLowerCase();
+export const normalizeName = (name) => name.trim().replace(/\s+/g, ' ').toLowerCase()
 
 
 // Extract numeric value from a string
