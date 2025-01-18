@@ -11,7 +11,7 @@ export const AddExpense = async(req,res) =>{
         console.log(req.body);
         console.log("\n\n--------------------------------------------------------\n\n");
 
-        const {Body} = req.query;
+        const {Body,From} = req.query;
         console.log("---------> message", Body);
         const inputText = Body;
         console.log("Message");

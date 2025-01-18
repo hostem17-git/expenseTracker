@@ -1,4 +1,1 @@
-export const whatsAppMiddleWare = (req,res,next)=>{
-    console.log("In middleware");
-    next();
-}
+export const whatsAppMiddleWare = express.urlencoded({ extended: false });
