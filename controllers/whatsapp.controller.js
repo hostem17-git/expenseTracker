@@ -1,28 +1,20 @@
 import {extractAmount,normalizeName } from "../utils/strings.utils.js"
 
 export const AddExpense = async(req,res) =>{
-    console.log("In controller");
     try{
-        // console.log("req");
-        // console.log(req);
-        // console.log("\n\n--------------------------------------------------------\n\n");
+        console.log("\n\n--------------------------------------------------------\n\n");
+        console.log("\n\n--------------------------------------------------------\n\n");
+        console.log("\n\n--------------------------------------------------------\n\n");
+  
 
-        console.log("req.body")
+        console.log("request body");
         console.log(req.body);
-        console.log("\n\n--------------------------------------------------------\n\n");
 
-        const {Body,From} = req.query;
-        console.log("---------> message", Body);
+        const {Body,From} = req.body;
+
         const inputText = Body;
-        console.log("Message");
-        console.log(inputText);
-        console.log("\n\n--------------------------------------------------------\n\n");
-
+        
         const inputLines = inputText.trim().split("\n");
-        console.log("Input lines");
-        console.log(inputLines);
-        console.log("\n\n--------------------------------------------------------\n\n");
-
         const data = {};
 
         inputLines.forEach(line =>{
@@ -40,6 +32,8 @@ export const AddExpense = async(req,res) =>{
 
         console.log("Data");
         console.log(data)
+        console.log("\n\n--------------------------------------------------------\n\n");
+        console.log("\n\n--------------------------------------------------------\n\n");
         console.log("\n\n--------------------------------------------------------\n\n");
 
 
