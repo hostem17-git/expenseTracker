@@ -1,6 +1,6 @@
 import { pool } from "../config/db.config.js";
 
-class whatsappRepository {
+class expenseRepository {
   async saveMessage(data, user) {
     let client = await pool.connect();
 
@@ -30,4 +30,4 @@ class whatsappRepository {
   }
 }
 
-export default new whatsappRepository();
+export default new expenseRepository();
