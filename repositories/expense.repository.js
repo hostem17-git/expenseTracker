@@ -16,18 +16,31 @@ class expenseRepository {
 
         const values = [expense, data[expense], user];
         const result = await client.query(query, values);
-        console.log('Inserted expense:', result.rows[0]);
+        console.log("Inserted expense:", result.rows[0]);
       }
 
       await client.query("COMMIT");
     } catch (error) {
       await client.query("ROLLBACK");
-      console.log("Error writing data to db",error);
+      console.log("Error writing data to db", error);
     } finally {
       client.release();
     }
+  }
 
+  async getExpenses() {
+    let client = await pool.connect();
+    let result = null;
+
+    try {
+      const query = `
+      SELECT * FROM expenses;
+      `;
+
+      // result = await client
+    } catch (error) {
+      console.log("Error getting expenses", error);
+    }
   }
 }
-
 export default new expenseRepository();

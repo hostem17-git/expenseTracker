@@ -1,19 +1,19 @@
 Routes
 
-    ./api/whatsapp :
+  ./api/whatsapp : To add from whatsapp
         method   : POST
         Body     : message
         function : Split message into parts, add transaction to DB, if fail respond back on whatsapp
     
-    ./api/expenses
+  ./api/expenses : To add from web app
         method   : Post
         function : add new expenses
 
-    ./api/expenses 
+   ./api/expenses 
         method   : GET
         function : get all expenses , add option for pagination, including filters for date, month and time.
 
-    ./api/expense/id : 
+    ./api/expense/:id : 
         method   : PATCH/PUT
         function : to update existing expenses
 
