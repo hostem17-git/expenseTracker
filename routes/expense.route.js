@@ -3,14 +3,14 @@ import { addExpense, bulkAddExpense, deleteExpense, getExpenses, updateExpense }
 
 const router = Router();
 
-router.get("/expenses", getExpenses);
+router.get("/", getExpenses);
 
-router.post("/expense", addExpense);
+router.post("/bulk", bulkAddExpense);
 
-router.post("/bulkexpense", bulkAddExpense);
+router.post("/", addExpense);
 
-router.put("/expenses/:id", updateExpense);
+router.put("/:id", updateExpense);
 
-router.delete("/expenses/:id", deleteExpense);
+router.delete("/:id", deleteExpense);
 
 export default router;

@@ -2,9 +2,14 @@ import whatsappService from "../services/whatsapp.service.js";
 
 export const getExpenses = async (req, res) => {};
 
-export const addExpense = async (req, res) => {};
+// TODO: Validate payload contains multiple expenses only.
+export const addExpense = async (req, res) => {
+  return res.status(200).json({message: "Add single expense"});
+
+};
 
 export const bulkAddExpense = async (req, res) => {
+  return res.status(200).json({message: "Bulk add expense"});
   try {
     const { message } = req.body;
     const user = req.document.user;

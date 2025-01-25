@@ -24,7 +24,7 @@ Routes
     ./api/auth
         -> Add Login methods - OTP based ??? or google signin  ????
 
-    ./api/user
+    ./api/user 
         method   : PUT/PATCH
         function : update user profiles ---- OTP confirmation ??
 
