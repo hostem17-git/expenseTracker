@@ -5,6 +5,12 @@ class userRepository {
   async addUser(username, email, encryptedPassword) {
     let client = await pool.connect();
 
+    let response = {
+      result: "pending",
+      message: "",
+      payload: null,
+    };
+
     try {
       await client.query("BEGIN");
 
@@ -18,19 +24,31 @@ class userRepository {
       const result = await client.query(query, values);
       console.log("Added user:", result.rows[0]);
 
+      response.result = "success";
+      response.message = "User added successfully";
+      response.payload = result.rows[0];
+
       await client.query("COMMIT");
     } catch (error) {
       await client.query("ROLLBACK");
       console.log("Error writing user to db", error);
+      response.result = "error";
+      response.message = "Error adding user";
+      response.payload = error;
     } finally {
       client.release();
     }
+    return response;
   }
 
-//   TODO:Test for non existing user.
+  //   TODO:Test for non existing user.
   async getUser(email) {
     let client = await pool.connect();
-    let result = null;
+    let response = {
+      result: "pending",
+      message: "",
+      payload: null,
+    };
 
     try {
       const query = `
@@ -41,17 +59,33 @@ class userRepository {
 
       const values = [email];
       result = await client.query(query, values);
-      return  result.rows[0];
+
+      if (result.rows.length === 0) {
+        response.result = "error";
+        response.message = "No user found";
+      }
+
+      response.result = "success";
+      response.message = "User found";
+      response.payload = result.rows[0];
     } catch (error) {
       console.log("Error getting user", error);
-    }finally {
+      response.result = "error";
+      response.message = "Error fetching user";
+      response.payload = error;
+    } finally {
       client.release();
-    };
+    }
+    return response;
   }
 
-  async getUserList(offset,limit){
+  async getUserList(offset, limit) {
     let client = await pool.connect();
-    let result = null;
+    let response = {
+      result: "pending",
+      message: "",
+      payload: null,
+    };
 
     try {
       const query = `
@@ -61,18 +95,31 @@ class userRepository {
         LIMIT $2;
       `;
 
-      const values = [offset,limit];
-      result = await client.query(query, values);
-      return  result.rows;
+      const values = [offset, limit];
+      const result = await client.query(query, values);
+
+      response.result = "success";
+      response.message = "User list retrieved successfully";
+      response.payload = result.rows;
     } catch (error) {
       console.log("Error getting user list", error);
-    }finally {
+      response.result = "error";
+      response.message = "Error fetching user list";
+      response.payload = error;
+    } finally {
       client.release();
-    };
+    }
+    return response;
+
   }
 
-  async updateUserProfile(userId,username,email) {
+  async updateUserProfile(userId, username, email) {
     let client = await pool.connect();
+    let response = {
+      result: "pending",
+      message: "",
+      payload: null,
+    };
 
     try {
       await client.query("BEGIN");
@@ -85,22 +132,37 @@ class userRepository {
 
       const values = [username, email, userId];
       const result = await client.query(query, values);
-      console.log("Updated user:", result.rows[0]);
 
+      if (result.rows.length === 0) {
+        response.result = "error";
+        response.message = "No user found";
+      }
+
+      console.log("Updated user:", result.rows[0]);
       await client.query("COMMIT");
+
+      response.result = "success";
+      response.message = "User profile updated successfully";
+      response.payload = result.rows[0];
     } catch (error) {
       await client.query("ROLLBACK");
       console.log("Error updating user profile", error);
+      response.result = "error";
+      response.message = "Error updating user profile";
+      response.payload = error;
     } finally {
       client.release();
     }
-
+    return response;
   }
 
-  async updateUserPassword(userId,encryptedPassword) {
-
+  async updateUserPassword(userId, encryptedPassword) {
     let client = await pool.connect();
-
+    let response = {
+      result: "pending",
+      message: "",
+      payload: null,
+    };
     try {
       await client.query("BEGIN");
       const query = `
@@ -110,20 +172,31 @@ class userRepository {
             RETURNING Username,Email,ContactNumber;
       `;
 
-      const values = [encryptedPassword , userId];
+      const values = [encryptedPassword, userId];
       const result = await client.query(query, values);
-      console.log("Updated user:", result.rows[0]);
 
+      if (result.rows.length === 0) {
+        response.result = "error";
+        response.message = "No user found";
+      }
       await client.query("COMMIT");
+
+      console.log("Updated user password:", result.rows[0]);
+
+      response.result = "success";
+      response.message = "User password updated successfully";
+      response.payload = result.rows[0];
     } catch (error) {
       await client.query("ROLLBACK");
       console.log("Error updating user password", error);
+      response.result = "error";
+      response.message = "Error updating user profile";
+      response.payload = error;
     } finally {
       client.release();
     }
-
+    return response;
 
   }
-
 }
 export default new userRepository();
