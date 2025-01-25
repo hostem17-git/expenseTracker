@@ -1,5 +1,4 @@
 import { pool } from "../config/db.config.js";
-import { deleteExpense } from "../controllers/expense.controller.js";
 
 class expenseRepository {
   async saveMessage(data, user) {
