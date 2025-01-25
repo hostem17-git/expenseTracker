@@ -1,6 +1,6 @@
 Routes
 
-  ./api/whatsapp : To add from whatsapp
+  ./api/whatsapp : To add from whatsapp DONE
         method   : POST
         Body     : message
         function : Split message into parts, add transaction to DB, if fail respond back on whatsapp
@@ -28,3 +28,6 @@ Routes
         method   : PUT/PATCH
         function : update user profiles ---- OTP confirmation ??
 
+
+
+Dummy user login for DEMO.

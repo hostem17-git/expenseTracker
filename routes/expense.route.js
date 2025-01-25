@@ -1,11 +1,13 @@
 import { Router } from "express";
-import { AddExpense, deleteExpense, getExpenses, updateExpense } from "../controllers/expense.controller";
+import { addExpense, bulkAddExpense, deleteExpense, getExpenses, updateExpense } from "../controllers/expense.controller.js";
 
 const router = Router();
 
 router.get("/expenses", getExpenses);
 
-router.post("/expenses", AddExpense);
+router.post("/expense", addExpense);
+
+router.post("/bulkexpense", bulkAddExpense);
 
 router.put("/expenses/:id", updateExpense);
 

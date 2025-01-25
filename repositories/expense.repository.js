@@ -1,4 +1,5 @@
 import { pool } from "../config/db.config.js";
+import { deleteExpense } from "../controllers/expense.controller.js";
 
 class expenseRepository {
   async saveMessage(data, user) {
@@ -28,7 +29,7 @@ class expenseRepository {
     }
   }
 
-  async getExpenses() {
+  async getExpenses(user, startDate, endDate,offset,limit) {
     let client = await pool.connect();
     let result = null;
 
@@ -42,5 +43,11 @@ class expenseRepository {
       console.log("Error getting expenses", error);
     }
   }
+
+  async AddExpense (expense,amount,category,date) {};
+
+  async updateExpense (req, res) {};
+
+  async deleteExpense (req, res) {};
 }
 export default new expenseRepository();
