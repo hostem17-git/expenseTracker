@@ -1,0 +1,1 @@
+export const JWT_LIFE = 1*60*60;

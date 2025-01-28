@@ -1,12 +1,12 @@
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { JWT_LIFE } from "../config";
+import { JWT_LIFE } from "../config/jwt.config.js";
+import { pool } from "../config/db.config.js";
 
 export const signin = async (req, res) => {
   const { email, password } = req.body;
   let client;
-
   try {
     client = await pool.connect();
     const search = await client.query(
@@ -24,7 +24,7 @@ export const signin = async (req, res) => {
 
     const user = search.rows[0];
 
-    const match = await bcrypt.compare(password.trim(), user.password);
+    const match = await bcrypt.compare(password.trim(), user.encryptedpassword);
 
     if (!match) {
       return res
@@ -65,8 +65,12 @@ export const signin = async (req, res) => {
 };
 
 export const signup = async (req, res) => {
-  const { username, email, password, role } = req.body;
+  const { username, email, password } = req.body;
   let client = null;
+
+  if(!username || !email || !password){
+    return res.status(400).json({ message: "Please provide all the required fields" });
+  }
 
   try {
     client = await pool.connect();
@@ -91,10 +95,10 @@ export const signup = async (req, res) => {
     // Insert new user
     await client.query(
       `
-      INSERT INTO users (username, email, password, role)
-      VALUES ($1, $2, $3, $4);
+      INSERT INTO users (username, email, encryptedpassword)
+      VALUES ($1, $2, $3);
     `,
-      [username.trim(), email.trim(), encryptedPassword, role]
+      [username.trim(), email.trim(), encryptedPassword]
     );
 
     res.status(201).json({ message: "User created successfully" });
@@ -119,52 +123,3 @@ export const signout = (req, res) => {
   }
 };
 
-export const resetPassword = async (req, res) => {
-  const { email, old_password, new_password } = req.body;
-  let client = null;
-  
-
-  try {
-     client = await pool.connect();
-
-    const search = await client.query(
-      `
-        SELECT * 
-        FROM users
-        WHERE email = $1
-        `,
-      [email.trim()]
-    );
-
-    if (search.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const user = search.rows[0];
-
-    const match = await bcrypt.compare(old_password.trim(), user.password);
-
-    if (!match) {
-      return res.status(401).json({ message: "Incorrect current password" });
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const encryptedPassword = await bcrypt.hash(new_password.trim(), salt);
-
-    await client.query(
-      `
-        UPDATE users 
-        SET password = $1 
-        WHERE email = $2
-        `,
-      [encryptedPassword, email.trim()]
-    );
-
-    res.status(200).json({ message: `Password successfully set for ${email}` });
-  } catch (error) {
-    console.error("Error while resting user password", error);
-    res.status(500).json({ message: "Internal server error" });
-  } finally {
-    client?.release();
-  }
-};

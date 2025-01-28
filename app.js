@@ -1,9 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 
-dotenv.config();
-
-const app = express();
 
 import ExpenseRouter from "./routes/expense.route.js";
 import WhatsappRouter from "./routes/whatsapp.route.js";
@@ -11,6 +9,12 @@ import UserRouter from "./routes/user.route.js";
 import HeartbeatRouter from "./routes/heartbeat.route.js";
 import AuthRouter from "./routes/auth.route.js";
 
+dotenv.config();
+
+const app = express();
+
+
+app.use(cookieParser())
 app.use(express.json());
 
 const BASE_ROUTE = "/api/v1";
