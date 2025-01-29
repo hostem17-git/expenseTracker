@@ -111,7 +111,7 @@ client?.release();  }
 
 export const signout = (req, res) => {
   try {
-    res.cookie("token", {
+    res.cookie("token","",{
       maxAge: 0,
       sameSite: "lax",
     });

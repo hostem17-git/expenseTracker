@@ -7,12 +7,10 @@ const userMiddleware = async (req, res, next) => {
     if (!cookie || !cookie.token) {
       return res.status(401).json({ message: "Authorization token missing" });
     }
-
     const token = cookie.token;
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if(decoded){
-        res.locals.userId = decodedValue.userId;
+        res.locals.userId = decoded.userId;
         return next();
     }
 
@@ -23,7 +21,7 @@ const userMiddleware = async (req, res, next) => {
       return res.status(401).json({ error: "authorization token expired" });
     }
     console.log("admin JWT verification error", error);
-    res.status(401).json({ error: "Invalid inputs" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
