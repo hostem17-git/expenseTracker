@@ -122,7 +122,7 @@ class expenseRepository {
     return response;
   }
 
-  async updateExpense(expenseId, expense, amount, category, date) {
+  async updateExpense(expenseId, expense, amount, category, date,userId) {
     let client = await pool.connect();
 
     let response = {
@@ -137,10 +137,10 @@ class expenseRepository {
       const query = `
         UPDATE expenses
         SET  expense = $1, amount = $2, category = $3, created = $4
-        WHERE id = $5
+        WHERE id = $5 AND userid = $6
         returning *;
       `;
-      const values = [expense, amount, category, date, expenseId];
+      const values = [expense, amount, category, date, expenseId,userId];
 
       const result = await client.query(query, values);
 
