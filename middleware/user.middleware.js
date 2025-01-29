@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-export default userMiddleware = async (req, res, next) => {
+const userMiddleware = async (req, res, next) => {
   try {
     const cookie = req.cookies;
 
@@ -26,3 +26,5 @@ export default userMiddleware = async (req, res, next) => {
     res.status(401).json({ error: "Invalid inputs" });
   }
 };
+
+export default userMiddleware

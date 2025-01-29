@@ -1,4 +1,4 @@
-import { pool } from "../config/db.config";
+import { pool } from "../config/db.config.js";
 
 
 export const resetPassword = async (req, res) => {

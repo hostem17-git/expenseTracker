@@ -1,16 +1,23 @@
 import { Router } from "express";
-import { addExpense, bulkAddExpense, deleteExpense, getExpenses, updateExpense } from "../controllers/expense.controller.js";
+import {
+  addExpense,
+  bulkAddExpense,
+  deleteExpense,
+  getExpenses,
+  updateExpense,
+} from "../controllers/expense.controller.js";
+import userMiddleware from "../middleware/user.middleware.js";
 
 const router = Router();
 
-router.get("/", getExpenses);
+router.get("/", userMiddleware, getExpenses);
 
-router.post("/bulk", bulkAddExpense);
+router.post("/bulk", userMiddleware, bulkAddExpense);
 
-router.post("/", addExpense);
+router.post("/", userMiddleware, addExpense);
 
-router.put("/:id", updateExpense);
+router.put("/:id", userMiddleware, updateExpense);
 
-router.delete("/:id", deleteExpense);
+router.delete("/:id", userMiddleware, deleteExpense);
 
 export default router;
