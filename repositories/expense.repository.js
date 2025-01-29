@@ -58,8 +58,8 @@ class expenseRepository {
       const query = `
         SELECT * 
         FROM expenses
-        WHERE user_id = $1
-        AND date BETWEEN $2 AND $3
+        WHERE userid = $1
+        AND created BETWEEN $2 AND $3
         LIMIT $4 OFFSET $5;
       `;
 
@@ -71,7 +71,7 @@ class expenseRepository {
       response.payload = result.rows;
     } catch (error) {
       console.log("Error getting expenses", error);
-      response.result = "error";
+      response.result = "failed";
       response.message = "Error fetching expenses";
       response.payload = error;
     } finally {
@@ -94,7 +94,7 @@ class expenseRepository {
       await client.query("BEGIN");
 
       const query = `
-        INSERT INTO expenses (user_id, expense_name, amount, category, date)
+        INSERT INTO expenses (userid, expense_name, amount, category, date)
         VALUES ($1, $2, $3, $4, $5)
         RETURNING *;
       `;
@@ -112,7 +112,7 @@ class expenseRepository {
       await client.query("ROLLBACK");
       console.log("Error adding expense", error);
 
-      response.result = "error";
+      response.result = "failed";
       response.message = "Error adding expense";
       response.payload = error;
     } finally {
@@ -136,7 +136,7 @@ class expenseRepository {
 
       const query = `
         UPDATE expenses
-        SET  expense = $1, amount = $2, category = $3, date = $4
+        SET  expense = $1, amount = $2, category = $3, created = $4
         WHERE id = $5
         returning *;
       `;
@@ -145,7 +145,7 @@ class expenseRepository {
       const result = await client.query(query, values);
 
       if (result.rowCount === 0) {
-        response.result = "error";
+        response.result = "failed";
         response.message = "Expense not found";
         return response;
       }
@@ -158,7 +158,7 @@ class expenseRepository {
       response.payload = result.rows[0];
     } catch (error) {
       console.log("Error updating expense", error);
-      response.result = "error";
+      response.result = "failed";
       response.message = "Error updating expense";
       response.payload = error;
     } finally {
@@ -190,7 +190,7 @@ class expenseRepository {
       const result = await client.query(query, values);
 
       if (result.rowCount === 0) {
-        response.result = "error";
+        response.result = "failed";
         response.message = "Expense not found";
         return response;
       }
@@ -205,7 +205,7 @@ class expenseRepository {
       await client.query("ROLLBACK");
       console.log("Error deleting expense", error);
 
-      response.result = "error";
+      response.result = "failed";
       response.message = "Error deleting expense";
       response.payload = error;
     } finally {

@@ -32,7 +32,7 @@ class userRepository {
     } catch (error) {
       await client.query("ROLLBACK");
       console.log("Error writing user to db", error);
-      response.result = "error";
+      response.result = "failed";
       response.message = "Error adding user";
       response.payload = error;
     } finally {
@@ -61,7 +61,7 @@ class userRepository {
       result = await client.query(query, values);
 
       if (result.rows.length === 0) {
-        response.result = "error";
+        response.result = "failed";
         response.message = "No user found";
       }
 
@@ -70,7 +70,7 @@ class userRepository {
       response.payload = result.rows[0];
     } catch (error) {
       console.log("Error getting user", error);
-      response.result = "error";
+      response.result = "failed";
       response.message = "Error fetching user";
       response.payload = error;
     } finally {
@@ -103,7 +103,7 @@ class userRepository {
       response.payload = result.rows;
     } catch (error) {
       console.log("Error getting user list", error);
-      response.result = "error";
+      response.result = "failed";
       response.message = "Error fetching user list";
       response.payload = error;
     } finally {
@@ -134,7 +134,7 @@ class userRepository {
       const result = await client.query(query, values);
 
       if (result.rows.length === 0) {
-        response.result = "error";
+        response.result = "failed";
         response.message = "No user found";
       }
 
@@ -147,7 +147,7 @@ class userRepository {
     } catch (error) {
       await client.query("ROLLBACK");
       console.log("Error updating user profile", error);
-      response.result = "error";
+      response.result = "failed";
       response.message = "Error updating user profile";
       response.payload = error;
     } finally {
@@ -176,7 +176,7 @@ class userRepository {
       const result = await client.query(query, values);
 
       if (result.rows.length === 0) {
-        response.result = "error";
+        response.result = "failed";
         response.message = "No user found";
       }
       await client.query("COMMIT");
@@ -189,7 +189,7 @@ class userRepository {
     } catch (error) {
       await client.query("ROLLBACK");
       console.log("Error updating user password", error);
-      response.result = "error";
+      response.result = "failed";
       response.message = "Error updating user profile";
       response.payload = error;
     } finally {

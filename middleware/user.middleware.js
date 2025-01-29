@@ -11,6 +11,8 @@ const userMiddleware = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if(decoded){
         res.locals.userId = decoded.userId;
+        // ! remove next time 
+        res.locals.userId = "whatsapp:+919454559034";
         return next();
     }
 
