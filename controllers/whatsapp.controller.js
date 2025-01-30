@@ -1,9 +1,15 @@
 import whatsappService from "../services/whatsapp.service.js";
-
+import { extractPhoneNumber } from "../utils/strings.utils.js";
+import userRepository from "../repositories/user.repository.js";
 export const AddExpense = async (req, res) => {
   try {
     const { Body, From } = req.body;
-    const result = await whatsappService.processIncomingMessage(Body, From);
+    const senderContact = extractPhoneNumber(From);
+  
+    const user = await userRepository.getUserByNumber(senderContact);
+    const userId = user.userid;
+
+    const result = await whatsappService.processIncomingMessage(Body, userId);
 
     res.status(201).json({
       success: true,

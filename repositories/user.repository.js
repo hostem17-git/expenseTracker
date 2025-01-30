@@ -79,6 +79,43 @@ class userRepository {
     return response;
   }
 
+  async getUserByNumber(number) {
+    let client = await pool.connect();
+    let response = {
+      result: "pending",
+      message: "",
+      payload: null,
+    };
+
+    try {
+      const query = `
+        SELECT username,email,contactnumber,userid
+        FROM Users
+        Where contactnumber = $1;
+      `;
+
+      const values = [number];
+      result = await client.query(query, values);
+
+      if (result.rows.length === 0) {
+        response.result = "failed";
+        response.message = "No user found";
+      }
+
+      response.result = "success";
+      response.message = "User found";
+      response.payload = result.rows[0];
+    } catch (error) {
+      console.log("Error getting user", error);
+      response.result = "failed";
+      response.message = "Error fetching user";
+      response.payload = error;
+    } finally {
+      client.release();
+    }
+    return response;
+  }
+
   async getUserList(offset, limit) {
     let client = await pool.connect();
     let response = {
