@@ -1,17 +1,10 @@
+import express from "express";
 import { Router } from "express";
 import { whatsAppMiddleWare } from "../middleware/whatsapp.middleware.js";
 import { AddExpense } from "../controllers/whatsapp.controller.js";
-import twilio from "twilio";
-
-// const temp = (req,res,next)=>{
-
-//     const temp = ;
-//     temp(req,res,next);
-//     next();
-// }
 
 const router = Router();
 
-router.post("/",whatsAppMiddleWare,twilio.webhook(),AddExpense);
+router.post("/",express.urlencoded({ extended: false }),whatsAppMiddleWare,AddExpense);
 
 export default router;
