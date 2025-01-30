@@ -1,5 +1,5 @@
 import { pool } from "../config/db.config.js";
-
+  
 class userRepository {
   // TODO:Test for already existing user.
   async addUser(username, email, encryptedPassword) {
@@ -58,7 +58,7 @@ class userRepository {
       `;
 
       const values = [email];
-      result = await client.query(query, values);
+      const result = await client.query(query, values);
 
       if (result.rows.length === 0) {
         response.result = "failed";
@@ -95,7 +95,7 @@ class userRepository {
       `;
 
       const values = [number];
-      result = await client.query(query, values);
+      const result = await client.query(query, values);
 
       if (result.rows.length === 0) {
         response.result = "failed";
