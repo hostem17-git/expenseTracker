@@ -5,10 +5,10 @@ export const AddExpense = async (req, res) => {
   try {
     const { Body, From } = req.body;
     const senderContact = extractPhoneNumber(From);
-  
-    const user = await userRepository.getUserByNumber(senderContact);
-    const userId = user.userid;
 
+    const user = await userRepository.getUserByNumber(senderContact);
+    const userId =
+      user.payload.userid == null ? senderContact : user.payload.userid;
     const result = await whatsappService.processIncomingMessage(Body, userId);
 
     res.status(201).json({
