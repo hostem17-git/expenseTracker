@@ -13,6 +13,8 @@ export const whatsAppMiddleWare = async (req, res, next) => {
     );
 
     if (!isValid) {
+        console.log("Invalid Request received",req);
+
       return res.status(403).send("Invalid Request");
     }
 
