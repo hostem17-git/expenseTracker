@@ -1,28 +1,25 @@
-
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { JWT_LIFE } from "../config/jwt.config.js";
 import { pool } from "../config/db.config.js";
 
+import userRepository from "../repositories/user.repository.js";
+
 export const signin = async (req, res) => {
   const { email, password } = req.body;
-  let client;
-  try {
-    client = await pool.connect();
-    const search = await client.query(
-      `
-      SELECT *
-      FROM users
-      WHERE email = $1 ;
-    `,
-      [email.trim()]
-    );
 
-    if (search.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
+  try {
+    const result = await userRepository.getUserByEmailWithPassword(email);
+
+    if (result.result ==="failed") {
+      if (result.message == "No user found") {
+        return res.status(404).json({ message: "User not found" });
+      } else {
+        return res.status(500).json({ message: "Internal server error" });
+      }
     }
 
-    const user = search.rows[0];
+    const user = result.payload;
 
     const match = await bcrypt.compare(password.trim(), user.encryptedpassword);
 
@@ -35,9 +32,9 @@ export const signin = async (req, res) => {
     const token = jwt.sign(
       {
         email,
-        userId:user.id
+        userId: user.id,
       },
-      process.env.JWT_SECRET ,
+      process.env.JWT_SECRET,
       {
         expiresIn: JWT_LIFE,
       }
@@ -59,59 +56,51 @@ export const signin = async (req, res) => {
   } catch (error) {
     console.log("Error during signin", error);
     res.status(500).json({ message: "Internal server error" });
-  } finally {
-    client?.release();
   }
 };
 
 export const signup = async (req, res) => {
   const { username, email, password } = req.body;
-  let client = null;
 
-  if(!username || !email || !password){
-    return res.status(400).json({ message: "Please provide all the required fields" });
+  if (!username || !email || !password) {
+    return res
+      .status(400)
+      .json({ message: "Please provide all the required fields" });
   }
 
   try {
-    client = await pool.connect();
+    const search = await userRepository.getUserByEmailWithPassword(email);
 
-    const search = await client.query(
-      `
-      SELECT *
-      FROM users
-      WHERE username = $1 AND email = $2;
-    `,
-      [username.trim(), email.trim()]
-    );
-
-    if (search.rows.length > 0) {
-      return res.status(400).json({ message: "User already exists" });
+    if (search.result == "success") {
+      return res.status(400).json({ message: "Email already exists" });
     }
 
     // password encryption
     const salt = await bcrypt.genSalt(10);
     const encryptedPassword = await bcrypt.hash(password.trim(), salt);
 
-    // Insert new user
-    await client.query(
-      `
-      INSERT INTO users (username, email, encryptedpassword)
-      VALUES ($1, $2, $3);
-    `,
-      [username.trim(), email.trim(), encryptedPassword]
+    const addToDB = await userRepository.addUser(
+      username.trim(),
+      email.trim(),
+      encryptedPassword
     );
+    console.log("add to db", addToDB);
+    if (!(addToDB.result === "success")) {
+      if (addToDB.payload.code === "23505") {
+        return res.status(409).json({ message: "User already exists" });
+      } else return res.status(404).json({ message: "Internal server error" });
+    }
 
     res.status(201).json({ message: "User created successfully" });
   } catch (error) {
     console.error("Error during user signup:", error);
     res.status(500).json({ message: "Internal server error" });
-  } finally {
-client?.release();  }
+  }
 };
 
 export const signout = (req, res) => {
   try {
-    res.cookie("token","",{
+    res.cookie("token", "", {
       maxAge: 0,
       sameSite: "lax",
     });
@@ -122,4 +111,3 @@ export const signout = (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-

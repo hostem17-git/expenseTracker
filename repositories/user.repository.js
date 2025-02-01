@@ -1,9 +1,8 @@
 import { pool } from "../config/db.config.js";
-  
+
 class userRepository {
-  // TODO:Test for already existing user.
   async addUser(username, email, encryptedPassword) {
-    let client = await pool.connect();
+    let client;
 
     let response = {
       result: "pending",
@@ -12,12 +11,13 @@ class userRepository {
     };
 
     try {
+      client = await pool.connect();
       await client.query("BEGIN");
 
       const query = `
-            INSERT INTO Users (Username, Email, EncryptedPassword)
+            INSERT INTO users (username, email, encryptedpassword)
             VALUES ($1, $2, $3)
-            RETURNING Username,Email,ContactNumber;
+            RETURNING username,email,contactnumber;
       `;
 
       const values = [username, email, encryptedPassword];
@@ -36,14 +36,16 @@ class userRepository {
       response.message = "Error adding user";
       response.payload = error;
     } finally {
-      client.release();
+      if (client) {
+        client.release();
+      }
     }
     return response;
   }
 
   //   TODO:Test for non existing user.
-  async getUser(email) {
-    let client = await pool.connect();
+  async getUserByEmailWithPassword(email) {
+    let client;
     let response = {
       result: "pending",
       message: "",
@@ -51,9 +53,10 @@ class userRepository {
     };
 
     try {
+      client = await pool.connect();
       const query = `
-        SELECT Username,Email,ContactNumber
-        FROM Users
+        SELECT * 
+        FROM users
         Where email = $1;
       `;
 
@@ -63,8 +66,8 @@ class userRepository {
       if (result.rows.length === 0) {
         response.result = "failed";
         response.message = "No user found";
+        return response;
       }
-
       response.result = "success";
       response.message = "User found";
       response.payload = result.rows[0];
@@ -74,13 +77,15 @@ class userRepository {
       response.message = "Error fetching user";
       response.payload = error;
     } finally {
-      client.release();
+      if (client) {
+        client.release();
+      }
     }
     return response;
   }
 
   async getUserByNumber(number) {
-    let client = await pool.connect();
+    let client;
     let response = {
       result: "pending",
       message: "",
@@ -88,9 +93,10 @@ class userRepository {
     };
 
     try {
+      client = await pool.connect();
       const query = `
         SELECT username,email,contactnumber,userid
-        FROM Users
+        FROM users
         Where contactnumber = $1;
       `;
 
@@ -100,8 +106,8 @@ class userRepository {
       if (result.rows.length === 0) {
         response.result = "failed";
         response.message = "No user found";
+        return response;
       }
-
       response.result = "success";
       response.message = "User found";
       response.payload = result.rows[0];
@@ -111,13 +117,16 @@ class userRepository {
       response.message = "Error fetching user";
       response.payload = error;
     } finally {
-      client.release();
+      if (client) {
+        client.release();
+      }
     }
     return response;
   }
 
+
   async getUserList(offset, limit) {
-    let client = await pool.connect();
+    let client;
     let response = {
       result: "pending",
       message: "",
@@ -125,9 +134,11 @@ class userRepository {
     };
 
     try {
+      client = await pool.connect();
       const query = `
-        SELECT Username,Email,ContactNumber
-        FROM Users
+        SELECT username,email,contactnumber
+        FROM users
+        ORDER BY userid ASC
         OFFSET $1
         LIMIT $2;
       `;
@@ -135,23 +146,29 @@ class userRepository {
       const values = [offset, limit];
       const result = await client.query(query, values);
 
-      response.result = "success";
-      response.message = "User list retrieved successfully";
-      response.payload = result.rows;
+      if (result.rows.length === 0) {
+        response.result = "failed";
+        response.message = "No users found";
+      } else {
+        response.result = "success";
+        response.message = "User list retrieved successfully";
+        response.payload = result.rows;
+      }
     } catch (error) {
       console.log("Error getting user list", error);
       response.result = "failed";
       response.message = "Error fetching user list";
       response.payload = error;
     } finally {
-      client.release();
+      if (client) {
+        client.release();
+      }
     }
     return response;
-
   }
 
   async updateUserProfile(userId, username, email) {
-    let client = await pool.connect();
+    let client;
     let response = {
       result: "pending",
       message: "",
@@ -159,12 +176,13 @@ class userRepository {
     };
 
     try {
+      client = await pool.connect();
       await client.query("BEGIN");
       const query = `
-            UPDATE Users 
-            SET Username = $1, Email = $2
-            WHERE id = $3
-            RETURNING Username,Email,ContactNumber;
+            UPDATE users 
+            SET username = $1, email = $2
+            WHERE userid = $3
+            RETURNING username,email,contactnumber;
       `;
 
       const values = [username, email, userId];
@@ -173,6 +191,7 @@ class userRepository {
       if (result.rows.length === 0) {
         response.result = "failed";
         response.message = "No user found";
+        return response;
       }
 
       console.log("Updated user:", result.rows[0]);
@@ -188,25 +207,29 @@ class userRepository {
       response.message = "Error updating user profile";
       response.payload = error;
     } finally {
-      client.release();
+      if (client) {
+        client.release();
+      }
     }
     return response;
   }
 
+  
   async updateUserPassword(userId, encryptedPassword) {
-    let client = await pool.connect();
+    let client;
     let response = {
       result: "pending",
       message: "",
       payload: null,
     };
     try {
+      client = await pool.connect();
       await client.query("BEGIN");
       const query = `
-            UPDATE Users 
-            Set EncryptedPassword = $1
-            WHERE id = $2
-            RETURNING Username,Email,ContactNumber;
+            UPDATE users 
+            Set encryptedpassword = $1
+            WHERE userid = $2
+            RETURNING username,email,contactnumber;
       `;
 
       const values = [encryptedPassword, userId];
@@ -215,6 +238,7 @@ class userRepository {
       if (result.rows.length === 0) {
         response.result = "failed";
         response.message = "No user found";
+        return response;
       }
       await client.query("COMMIT");
 
@@ -230,10 +254,13 @@ class userRepository {
       response.message = "Error updating user profile";
       response.payload = error;
     } finally {
-      client.release();
+      if (client) {
+        client.release();
+      }
     }
     return response;
-
   }
 }
+
+
 export default new userRepository();
