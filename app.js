@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
-import cors from 'cors';
+import corsMiddleware from "./middleware/cors.middleware.js";
 
 import ExpenseRouter from "./routes/expense.route.js";
 import WhatsappRouter from "./routes/whatsapp.route.js";
@@ -14,11 +14,7 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true
-}));
+app.use(corsMiddleware);
 
 
 app.use(cookieParser())
