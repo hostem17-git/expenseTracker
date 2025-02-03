@@ -11,7 +11,7 @@ export const signin = async (req, res) => {
   try {
     const result = await userRepository.getUserByEmailWithPassword(email);
 
-    if (result.result ==="failed") {
+    if (result.result === "failed") {
       if (result.message == "No user found") {
         return res.status(404).json({ message: "User not found" });
       } else {
