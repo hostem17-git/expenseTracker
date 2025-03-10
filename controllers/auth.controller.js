@@ -32,7 +32,7 @@ export const signin = async (req, res) => {
     const token = jwt.sign(
       {
         email,
-        userId: user.id,
+        userId: user.userid,
       },
       process.env.JWT_SECRET,
       {

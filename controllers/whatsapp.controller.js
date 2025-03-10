@@ -7,6 +7,7 @@ export const AddExpense = async (req, res) => {
     const senderContact = extractPhoneNumber(From);
 
     const user = await userRepository.getUserByNumber(senderContact);
+    // TODO: Ask user to signup before adding expenses. Respond accordingly for new users.
     const userId =
       user.payload.userid == null ? senderContact : user.payload.userid;
     const result = await whatsappService.processIncomingMessage(Body, userId);
