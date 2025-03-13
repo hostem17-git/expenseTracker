@@ -11,7 +11,7 @@ import whatsappService from "../services/whatsapp.service.js";
  * @return {object} res.message - Status message indicating the outcome of the request.
  * @return {object} res.data - Object containing the retrieved expenses.
  */
-export const getExpenses = async (req, res) => {
+export const getExpenseItems = async (req, res) => {
   try {
     let { startDate, endDate, offset, limit } = req.body;
     const user = res.locals.userId;
@@ -32,7 +32,7 @@ export const getExpenses = async (req, res) => {
       limit = 10;
     }
 
-    const result = await expenseRepository.getExpenses(
+    const result = await expenseRepository.getExpenseItems(
       user,
       startDate,
       endDate,
@@ -58,6 +58,96 @@ export const getExpenses = async (req, res) => {
     }
   } catch (error) {
     console.log("Get expenses error", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getExpenseSummaryPrimary = async (req, res) => {
+  try {
+    let { startDate, endDate} = req.body;
+    const user = res.locals.userId;
+
+    if (!startDate) {
+      startDate = "1970-01-01";
+    }
+
+    if (!endDate) {
+      endDate = new Date().toISOString().split("T")[0];
+    }
+
+    const result = await expenseRepository.getExpenseSummaryPrimary(
+      user,
+      startDate,
+      endDate,
+    );
+
+    console.log("Get expense summary result", result);
+
+    if (result.result === "failed") {
+      return res.status(500).json({ message: "Internal server error" });
+    }
+    if (result.payload.length === 0) {
+      return res.status(404).json({ message: "No expenses found" });
+    }
+    if (result.result === "success") {
+      return res
+        .status(200)
+        .json({
+          message: `${result.payload.length} Expenses found`,
+          data: result.payload,
+        });
+    }
+  } catch (error) {
+    console.log("Get expense summary error", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getExpenseSummarySecondary = async (req, res) => {
+  try {
+    let { startDate, endDate} = req.body;
+    
+    let { primaryCategory } = req.params;
+
+    const user = res.locals.userId;
+
+    if (!startDate) {
+      startDate = "1970-01-01";
+    }
+
+    if (!endDate) {
+      endDate = new Date().toISOString().split("T")[0];
+    }
+
+    if(!primaryCategory){
+      res.status(400).json({message:"Primary category is required"})
+    }
+
+    const result = await expenseRepository.getExpenseSummarySecondary(
+      user,
+      primaryCategory,
+      startDate,
+      endDate,
+    );
+
+    console.log("Get expense summary result", result);
+
+    if (result.result === "failed") {
+      return res.status(500).json({ message: "Internal server error" });
+    }
+    if (result.payload.length === 0) {
+      return res.status(404).json({ message: "No expenses found" });
+    }
+    if (result.result === "success") {
+      return res
+        .status(200)
+        .json({
+          message: `${result.payload.length} Expenses found`,
+          data: result.payload,
+        });
+    }
+  } catch (error) {
+    console.log("Get expense summary error", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -105,7 +195,6 @@ export const addExpense = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 // TODO: implement check to ensure message format is correct.
 export const bulkAddExpense = async (req, res) => {

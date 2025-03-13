@@ -3,14 +3,20 @@ import {
   addExpense,
   bulkAddExpense,
   deleteExpense,
-  getExpenses,
+  getExpenseItems,
+  getExpenseSummaryPrimary,
+  getExpenseSummarySecondary,
   updateExpense,
 } from "../controllers/expense.controller.js";
 import userMiddleware from "../middleware/user.middleware.js";
 
 const router = Router();
 
-router.get("/", userMiddleware, getExpenses);
+router.get("/", userMiddleware, getExpenseItems);
+
+router.get("/summary", userMiddleware, getExpenseSummaryPrimary);
+
+router.get("/summary/:primaryCategory", userMiddleware, getExpenseSummarySecondary);
 
 router.post("/bulk", userMiddleware, bulkAddExpense);
 

@@ -45,7 +45,7 @@ class expenseRepository {
     return response;
   }
 
-  async getExpenses(user, startDate, endDate, offset, limit) {
+  async getExpenseItems(user, startDate, endDate, offset, limit) {
     let client = await pool.connect();
 
     let response = {
@@ -56,7 +56,7 @@ class expenseRepository {
 
     try {
       const query = `
-        SELECT * 
+        SELECT expense,amount,created,primarycategory,secondarycategory,id 
         FROM expenses
         WHERE userid = $1
         AND created BETWEEN $2 AND $3
@@ -80,6 +80,81 @@ class expenseRepository {
 
     return response;
   }
+
+  
+  async getExpenseSummaryPrimary(user, startDate, endDate, offset, limit) {
+    let client = await pool.connect();
+
+    let response = {
+      result: "pending",
+      message: "",
+      payload: null,
+    };
+
+    try {
+      const query = `
+        SELECT SUM(amount) as totalamount,primarycategory
+        FROM expenses
+        WHERE userid = $1
+        AND created BETWEEN $2 AND $3
+        GROUP BY primarycategory
+      `;
+
+      const values = [user, startDate, endDate];
+      const result = await client.query(query, values);
+
+      response.result = "success";
+      response.message = "Expenses retrieved successy";
+      response.payload = result.rows;
+    } catch (error) {
+      console.log("Error getting expenses", error);
+      response.result = "failed";
+      response.message = "Error fetching expenses";
+      response.payload = error;
+    } finally {
+      client.release();
+    }
+
+    return response;
+  }
+
+  async getExpenseSummarySecondary(user,primaryCategory, startDate, endDate) {
+    let client = await pool.connect();
+
+    let response = {
+      result: "pending",
+      message: "",
+      payload: null,
+    };
+
+    try {
+      const query = `
+        SELECT SUM(amount) as totalamount,secondarycategory
+        FROM expenses
+        WHERE userid = $1 AND primarycategory = $2
+        AND created BETWEEN $3 AND $4
+        GROUP BY secondarycategory
+      `;
+
+      const values = [user, primaryCategory, startDate, endDate];
+      const result = await client.query(query, values);
+
+      response.result = "success";
+      response.message = "Expenses retrieved successy";
+      response.payload = result.rows;
+    } catch (error) {
+      console.log("Error getting expenses", error);
+      response.result = "failed";
+      response.message = "Error fetching expenses";
+      response.payload = error;
+    } finally {
+      client.release();
+    }
+
+    return response;
+  }
+
+
 
   async AddExpense(user, expense, amount, category, date) {
     let client = await pool.connect();
