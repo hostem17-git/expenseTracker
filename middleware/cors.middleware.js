@@ -3,6 +3,7 @@ import cors from "cors";
 const allowedOrigins = [
     // Production frontend
     "http://localhost:5173", // Development frontend
+    "http://192.168.1.35:5173",
     "http://116.203.134.67", // Allowed IP 1
     "http://116.203.129.16", // Allowed IP 2
     "http://23.88.105.37", // Allowed IP 3
