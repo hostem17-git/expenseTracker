@@ -93,7 +93,7 @@ class expenseRepository {
 
     try {
       const query = `
-        SELECT SUM(amount) as totalamount,primarycategory
+        SELECT SUM(amount) as value,primarycategory as id
         FROM expenses
         WHERE userid = $1
         AND created BETWEEN $2 AND $3
@@ -129,7 +129,7 @@ class expenseRepository {
 
     try {
       const query = `
-        SELECT SUM(amount) as totalamount,secondarycategory
+        SELECT SUM(amount) as value ,secondarycategory as id
         FROM expenses
         WHERE userid = $1 AND primarycategory = $2
         AND created BETWEEN $3 AND $4
