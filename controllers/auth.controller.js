@@ -42,7 +42,7 @@ export const signin = async (req, res) => {
 
     res.cookie("token", token, {
       maxAge: JWT_LIFE * 1000,
-      sameSite: "lax",
+      sameSite: "none",
     });
 
     res.status(200).json({
@@ -102,7 +102,7 @@ export const signout = (req, res) => {
   try {
     res.cookie("token", "", {
       maxAge: 0,
-      sameSite: "lax",
+      sameSite: "none",
     });
 
     res.status(200).json({ message: "Signed out" });
