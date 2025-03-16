@@ -13,7 +13,14 @@ import whatsappService from "../services/whatsapp.service.js";
  */
 export const getExpenseItems = async (req, res) => {
   try {
-    let { startDate, endDate, offset, limit } = req.body;
+    let {
+      startDate,
+      endDate,
+      offset,
+      limit,
+      primarycategory,
+      secondarycategory,
+    } = req.body;
     const user = res.locals.userId;
 
     if (!startDate) {
@@ -24,20 +31,23 @@ export const getExpenseItems = async (req, res) => {
       endDate = new Date().toISOString().split("T")[0];
     }
 
-    if (!offset) {
-      offset = 0;
+    if(!primarycategory){
+      primarycategory=null;
     }
 
-    if (!limit) {
-      limit = 10;
+    if(!secondarycategory){
+      secondarycategory=null;
+    }
+
+    if(!limit){
+      limit= 1000;
+    }
+    if(!offset){
+      offset=0;
     }
 
     const result = await expenseRepository.getExpenseItems(
-      user,
-      startDate,
-      endDate,
-      offset,
-      limit
+      user, startDate, endDate,primarycategory,secondarycategory, offset, limit
     );
 
     console.log("Get expenses result", result);
@@ -49,12 +59,10 @@ export const getExpenseItems = async (req, res) => {
       return res.status(404).json({ message: "No expenses found" });
     }
     if (result.result === "success") {
-      return res
-        .status(200)
-        .json({
-          message: `${result.payload.length} Expenses found`,
-          data: result.payload,
-        });
+      return res.status(200).json({
+        message: `${result.payload.expenses.length} Expenses found`,
+        data: result.payload,
+      });
     }
   } catch (error) {
     console.log("Get expenses error", error);
@@ -64,7 +72,7 @@ export const getExpenseItems = async (req, res) => {
 
 export const getExpenseSummaryPrimary = async (req, res) => {
   try {
-    let { startDate, endDate} = req.body;
+    let { startDate, endDate } = req.body;
     const user = res.locals.userId;
 
     if (!startDate) {
@@ -78,7 +86,7 @@ export const getExpenseSummaryPrimary = async (req, res) => {
     const result = await expenseRepository.getExpenseSummaryPrimary(
       user,
       startDate,
-      endDate,
+      endDate
     );
 
     console.log("Get expense summary result", result);
@@ -90,12 +98,10 @@ export const getExpenseSummaryPrimary = async (req, res) => {
       return res.status(404).json({ message: "No expenses found" });
     }
     if (result.result === "success") {
-      return res
-        .status(200)
-        .json({
-          message: `${result.payload.length} Expenses found`,
-          data: result.payload,
-        });
+      return res.status(200).json({
+        message: `${result.payload.length} Expenses found`,
+        data: result.payload,
+      });
     }
   } catch (error) {
     console.log("Get expense summary error", error);
@@ -105,8 +111,8 @@ export const getExpenseSummaryPrimary = async (req, res) => {
 
 export const getExpenseSummarySecondary = async (req, res) => {
   try {
-    let { startDate, endDate} = req.body;
-    
+    let { startDate, endDate } = req.body;
+
     let { primaryCategory } = req.params;
 
     const user = res.locals.userId;
@@ -119,15 +125,15 @@ export const getExpenseSummarySecondary = async (req, res) => {
       endDate = new Date().toISOString().split("T")[0];
     }
 
-    if(!primaryCategory){
-      res.status(400).json({message:"Primary category is required"})
+    if (!primaryCategory) {
+      res.status(400).json({ message: "Primary category is required" });
     }
 
     const result = await expenseRepository.getExpenseSummarySecondary(
       user,
       primaryCategory,
       startDate,
-      endDate,
+      endDate
     );
 
     console.log("Get expense summary result", result);
@@ -139,19 +145,16 @@ export const getExpenseSummarySecondary = async (req, res) => {
       return res.status(404).json({ message: "No expenses found" });
     }
     if (result.result === "success") {
-      return res
-        .status(200)
-        .json({
-          message: `${result.payload.length} Expenses found`,
-          data: result.payload,
-        });
+      return res.status(200).json({
+        message: `${result.payload.length} Expenses found`,
+        data: result.payload,
+      });
     }
   } catch (error) {
     console.log("Get expense summary error", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 /**
  * @notice Adds single expenses for the signed-in user
@@ -163,34 +166,43 @@ export const getExpenseSummarySecondary = async (req, res) => {
  * @return {object} res.data - Object containing the retrieved expenses.
  */
 export const addExpense = async (req, res) => {
-  try{
-    let {date,amount,expense,category} = req.body;
+  try {
+    let { date, amount, expense, category } = req.body;
 
-    if(!expense || !amount){
-      return res.status(400).json({message:"Expense and amount are required"});
+    if (!expense || !amount) {
+      return res
+        .status(400)
+        .json({ message: "Expense and amount are required" });
     }
 
-    if(!date){
+    if (!date) {
       date = new Date().toISOString().split("T")[0];
     }
 
-    if(!category){
+    if (!category) {
       category = "Categorization pending";
     }
 
     const user = res.locals.userId;
 
-    const result = await expenseRepository.AddExpense(user,expense,amount,category,date);
+    const result = await expenseRepository.AddExpense(
+      user,
+      expense,
+      amount,
+      category,
+      date
+    );
 
-    if(result.result === "failed"){
-      return res.status(500).json({message:result.message});
+    if (result.result === "failed") {
+      return res.status(500).json({ message: result.message });
     }
 
-    if(result.result === "success"){
-      return res.status(201).json({message:"Expense added successfully",data:result.payload});
+    if (result.result === "success") {
+      return res
+        .status(201)
+        .json({ message: "Expense added successfully", data: result.payload });
     }
-
-  }catch(error){
+  } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -198,7 +210,9 @@ export const addExpense = async (req, res) => {
 
 // TODO: implement check to ensure message format is correct.
 export const bulkAddExpense = async (req, res) => {
-  return res.status(500).json({ message: "Bulk add expense implementation pending" });
+  return res
+    .status(500)
+    .json({ message: "Bulk add expense implementation pending" });
   try {
     const { message } = req.body;
     const user = req.document.user;
@@ -223,73 +237,87 @@ export const bulkAddExpense = async (req, res) => {
  * @param {object} req.Date - Date of expense.
  * @param {object} req.params - Expense ID.
  * @param {object} req.category - Expense category.
- * 
+ *
  * @return {object} res.message - Status message indicating the outcome of the request.
  * @return {object} res.data - Object containing the retrieved expenses.
  */
 export const updateExpense = async (req, res) => {
+  try {
+    let { date, amount, expense, category } = req.body;
+    const { id } = req.params;
 
-  try{
-    let {date,amount,expense,category} = req.body;
-    const {id} = req.params;
-
-    if(!expense || !amount){
-      return res.status(400).json({message:"Expense and amount are required"});
-    } 
-
-    if(!date){
-      return res.status(400).json({message:"date required"});
+    if (!expense || !amount) {
+      return res
+        .status(400)
+        .json({ message: "Expense and amount are required" });
     }
 
-    if(!category){
+    if (!date) {
+      return res.status(400).json({ message: "date required" });
+    }
+
+    if (!category) {
       category = "Categorization pending";
     }
 
     const user = res.locals.userId;
 
-    const result = await expenseRepository.updateExpense(id,expense,amount,category,date,user);
+    const result = await expenseRepository.updateExpense(
+      id,
+      expense,
+      amount,
+      category,
+      date,
+      user
+    );
 
-    if(result.result === "failed"){
-      return res.status(500).json({message:response.message});
+    if (result.result === "failed") {
+      return res.status(500).json({ message: response.message });
     }
 
-    if(result.result === "success"){
-      return res.status(200).json({message:"Expense updated successfully",data:result.payload});
+    if (result.result === "success") {
+      return res
+        .status(200)
+        .json({
+          message: "Expense updated successfully",
+          data: result.payload,
+        });
     }
-  }catch(error){
+  } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
-
-
 };
 
 /**
  * @notice deletes single expenses for the signed-in user
  * @param {object} req.params - Expense ID.
- * 
+ *
  * @return {object} res.message - Status message indicating the outcome of the request.
  * @return {object} res.data - Object containing the retrieved expenses.
  */
 export const deleteExpense = async (req, res) => {
-  try{
-    const {id} = req.params;
+  try {
+    const { id } = req.params;
 
     const user = res.locals.userId;
 
-    const result = await expenseRepository.deleteExpense(id,user);
+    const result = await expenseRepository.deleteExpense(id, user);
 
-    if(result.result === "failed"){
-      return res.status(500).json({message:response.message});
+    if (result.result === "failed") {
+      return res.status(500).json({ message: response.message });
     }
 
-    if(result.result === "success"){
-      return res.status(200).json({message:"Expense deleted successfully",data:result.payload});
+    if (result.result === "success") {
+      return res
+        .status(200)
+        .json({
+          message: "Expense deleted successfully",
+          data: result.payload,
+        });
     }
-  }catch(error){
+  } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
-
-
 };

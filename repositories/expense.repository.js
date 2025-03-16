@@ -45,30 +45,43 @@ class expenseRepository {
     return response;
   }
 
-  async getExpenseItems(user, startDate, endDate, offset, limit) {
+  async getExpenseItems(user, startDate, endDate,primarycategory,secondarycategory, offset, limit) {
     let client = await pool.connect();
 
     let response = {
       result: "pending",
       message: "",
-      payload: null,
+      payload: {
+        totalRows: null,
+        expenses: null,
+      },
     };
 
     try {
       const query = `
-        SELECT expense,amount,created,primarycategory,secondarycategory,id 
-        FROM expenses
-        WHERE userid = $1
-        AND created BETWEEN $2 AND $3
-        LIMIT $4 OFFSET $5;
+        SELECT expense, amount, created, primarycategory, secondarycategory, id  
+        FROM expenses  
+        WHERE userid = $1  
+        AND created BETWEEN $2 AND $3  
+        AND ($4::TEXT IS NULL OR primarycategory = $4::TEXT)  
+        AND ($5::TEXT IS NULL OR secondarycategory = $5::TEXT)  
+        LIMIT $6 OFFSET $7;  
       `;
 
-      const values = [user, startDate, endDate, limit, offset];
+      const values = [
+        user,
+        startDate, 
+        endDate, 
+        primarycategory || null, 
+        secondarycategory || null,
+        limit,
+        offset];
+        
       const result = await client.query(query, values);
-
       response.result = "success";
       response.message = "Expenses retrieved successy";
-      response.payload = result.rows;
+      response.payload.totalRows = result.rowCount;
+      response.payload.expenses = result.rows;
     } catch (error) {
       console.log("Error getting expenses", error);
       response.result = "failed";
@@ -81,7 +94,6 @@ class expenseRepository {
     return response;
   }
 
-  
   async getExpenseSummaryPrimary(user, startDate, endDate, offset, limit) {
     let client = await pool.connect();
 
@@ -118,7 +130,7 @@ class expenseRepository {
     return response;
   }
 
-  async getExpenseSummarySecondary(user,primaryCategory, startDate, endDate) {
+  async getExpenseSummarySecondary(user, primaryCategory, startDate, endDate) {
     let client = await pool.connect();
 
     let response = {
@@ -153,8 +165,6 @@ class expenseRepository {
 
     return response;
   }
-
-
 
   async AddExpense(user, expense, amount, category, date) {
     let client = await pool.connect();
@@ -197,7 +207,7 @@ class expenseRepository {
     return response;
   }
 
-  async updateExpense(expenseId, expense, amount, category, date,userId) {
+  async updateExpense(expenseId, expense, amount, category, date, userId) {
     let client = await pool.connect();
 
     let response = {
@@ -215,7 +225,7 @@ class expenseRepository {
         WHERE id = $5 AND userid = $6
         returning *;
       `;
-      const values = [expense, amount, category, date, expenseId,userId];
+      const values = [expense, amount, category, date, expenseId, userId];
 
       const result = await client.query(query, values);
 
