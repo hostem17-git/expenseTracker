@@ -25,9 +25,11 @@ const PORT = process.env.PORT || 3000;
 
 app.use(`${BASE_ROUTE}/auth`, AuthRouter);
 app.use(`${BASE_ROUTE}/expense`, ExpenseRouter);
-app.use(`${BASE_ROUTE}/whatsapp`, WhatsappRouter);
 app.use(`${BASE_ROUTE}/user`, UserRouter);
 app.use(`${BASE_ROUTE}/heartbeat`, HeartbeatRouter);
+
+app.use(`${BASE_ROUTE}/whatsapp`, WhatsappRouter);
+
 
 // Invalid path hit
 app.all("*", (req, res) => {

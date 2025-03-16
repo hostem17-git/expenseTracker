@@ -45,6 +45,52 @@ class expenseRepository {
     return response;
   }
 
+  async getExpenseCount(user, startDate, endDate,primarycategory,secondarycategory) {
+    let client = await pool.connect();
+
+    let response = {
+      result: "pending",
+      message: "",
+      payload: {
+        totalRows: null,
+        expenses: null,
+      },
+    };
+
+    try {
+      const query = `
+        SELECT COUNT(*) 
+        FROM expenses  
+        WHERE userid = $1  
+        AND created BETWEEN $2 AND $3  
+        AND ($4::TEXT IS NULL OR primarycategory = $4::TEXT)  
+        AND ($5::TEXT IS NULL OR secondarycategory = $5::TEXT)  
+      `;
+
+      const values = [
+        user,
+        startDate, 
+        endDate, 
+        primarycategory || null, 
+        secondarycategory || null,
+  ];
+        
+      const result = await client.query(query, values);
+      response.result = "success";
+      response.message = "Expense count retrieved successy";
+      response.payload.totalRows = result.rows[0]?.count;
+    } catch (error) {
+      console.log("Error getting expenses", error);
+      response.result = "failed";
+      response.message = "Error fetching expenses";
+      response.payload = error;
+    } finally {
+      client.release();
+    }
+
+    return response;
+  }
+
   async getExpenseItems(user, startDate, endDate,primarycategory,secondarycategory, offset, limit) {
     let client = await pool.connect();
 
@@ -76,7 +122,7 @@ class expenseRepository {
         secondarycategory || null,
         limit,
         offset];
-        
+
       const result = await client.query(query, values);
       response.result = "success";
       response.message = "Expenses retrieved successy";

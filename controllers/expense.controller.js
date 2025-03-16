@@ -20,7 +20,9 @@ export const getExpenseItems = async (req, res) => {
       limit,
       primarycategory,
       secondarycategory,
-    } = req.body;
+    } = req.query;
+
+
     const user = res.locals.userId;
 
     if (!startDate) {
@@ -31,26 +33,33 @@ export const getExpenseItems = async (req, res) => {
       endDate = new Date().toISOString().split("T")[0];
     }
 
-    if(!primarycategory){
-      primarycategory=null;
+    if (!primarycategory) {
+      primarycategory = null;
     }
 
-    if(!secondarycategory){
-      secondarycategory=null;
+    if (!secondarycategory) {
+      secondarycategory = null;
     }
 
-    if(!limit){
-      limit= 1000;
+    if (!limit) {
+      limit = 1000;
     }
-    if(!offset){
-      offset=0;
+    if (!offset) {
+      offset = 0;
     }
+
 
     const result = await expenseRepository.getExpenseItems(
-      user, startDate, endDate,primarycategory,secondarycategory, offset, limit
+      user,
+      startDate,
+      endDate,
+      primarycategory,
+      secondarycategory,
+      offset,
+      limit
     );
 
-    console.log("Get expenses result", result);
+    const rowCount = await expenseRepository.getExpenseCount(user, startDate, endDate,primarycategory,secondarycategory)
 
     if (result.result === "failed") {
       return res.status(500).json({ message: "Internal server error" });
@@ -60,8 +69,12 @@ export const getExpenseItems = async (req, res) => {
     }
     if (result.result === "success") {
       return res.status(200).json({
-        message: `${result.payload.expenses.length} Expenses found`,
-        data: result.payload,
+        message: `${rowCount?.payload?.totalRows} Expenses found`,
+        data: {
+          rowCount:rowCount?.payload?.totalRows,
+          payload:result.payload,
+        },
+        
       });
     }
   } catch (error) {
@@ -89,7 +102,6 @@ export const getExpenseSummaryPrimary = async (req, res) => {
       endDate
     );
 
-    console.log("Get expense summary result", result);
 
     if (result.result === "failed") {
       return res.status(500).json({ message: "Internal server error" });
@@ -136,7 +148,6 @@ export const getExpenseSummarySecondary = async (req, res) => {
       endDate
     );
 
-    console.log("Get expense summary result", result);
 
     if (result.result === "failed") {
       return res.status(500).json({ message: "Internal server error" });
@@ -203,7 +214,7 @@ export const addExpense = async (req, res) => {
         .json({ message: "Expense added successfully", data: result.payload });
     }
   } catch (error) {
-    console.log(error);
+    console.log("Add expense error",error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -276,12 +287,10 @@ export const updateExpense = async (req, res) => {
     }
 
     if (result.result === "success") {
-      return res
-        .status(200)
-        .json({
-          message: "Expense updated successfully",
-          data: result.payload,
-        });
+      return res.status(200).json({
+        message: "Expense updated successfully",
+        data: result.payload,
+      });
     }
   } catch (error) {
     console.log(error);
@@ -309,12 +318,10 @@ export const deleteExpense = async (req, res) => {
     }
 
     if (result.result === "success") {
-      return res
-        .status(200)
-        .json({
-          message: "Expense deleted successfully",
-          data: result.payload,
-        });
+      return res.status(200).json({
+        message: "Expense deleted successfully",
+        data: result.payload,
+      });
     }
   } catch (error) {
     console.log(error);
