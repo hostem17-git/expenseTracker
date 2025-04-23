@@ -59,12 +59,12 @@ class expenseRepository {
 
     try {
       const query = `
-        SELECT COUNT(*) 
+        SELECT COUNT(expense) 
         FROM expenses  
         WHERE userid = $1  
         AND created BETWEEN $2 AND $3  
         AND ($4::TEXT IS NULL OR primarycategory = $4::TEXT)  
-        AND ($5::TEXT IS NULL OR secondarycategory = $5::TEXT)  
+        AND ($5::TEXT IS NULL OR secondarycategory = $5::TEXT);
       `;
 
       const values = [
@@ -77,7 +77,7 @@ class expenseRepository {
         
       const result = await client.query(query, values);
       response.result = "success";
-      response.message = "Expense count retrieved successy";
+      response.message = "Expense count retrieved successfully";
       response.payload.totalRows = result.rows[0]?.count;
     } catch (error) {
       console.log("Error getting expenses", error);
@@ -110,8 +110,9 @@ class expenseRepository {
         WHERE userid = $1  
         AND created BETWEEN $2 AND $3  
         AND ($4::TEXT IS NULL OR primarycategory = $4::TEXT)  
-        AND ($5::TEXT IS NULL OR secondarycategory = $5::TEXT)  
-        LIMIT $6 OFFSET $7;  
+        AND ($5::TEXT IS NULL OR secondarycategory = $5::TEXT)
+        ORDER BY created ASC 
+        LIMIT $6 OFFSET $7;
       `;
 
       const values = [
@@ -125,8 +126,8 @@ class expenseRepository {
 
       const result = await client.query(query, values);
       response.result = "success";
-      response.message = "Expenses retrieved successy";
-      response.payload.totalRows = result.rowCount;
+      response.message = "Expenses retrieved successfully";
+      // response.payload.totalRows = result.rowCount;
       response.payload.expenses = result.rows;
     } catch (error) {
       console.log("Error getting expenses", error);
@@ -253,7 +254,7 @@ class expenseRepository {
     return response;
   }
 
-  async updateExpense(expenseId, expense, amount, category, date, userId) {
+  async updateExpense(expenseId, expense, amount, primarycategory,secondarycategory, date, userId) {
     let client = await pool.connect();
 
     let response = {
@@ -267,11 +268,11 @@ class expenseRepository {
 
       const query = `
         UPDATE expenses
-        SET  expense = $1, amount = $2, category = $3, created = $4
-        WHERE id = $5 AND userid = $6
+        SET  expense = $1, amount = $2, primarycategory = $3, secondarycategory = $4 ,created = $5
+        WHERE id = $6 AND userid = $7
         returning *;
       `;
-      const values = [expense, amount, category, date, expenseId, userId];
+      const values = [expense, amount, primarycategory,secondarycategory, date, expenseId, userId];
 
       const result = await client.query(query, values);
 

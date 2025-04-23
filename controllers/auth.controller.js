@@ -45,12 +45,14 @@ export const signin = async (req, res) => {
       sameSite: "lax",
     });
 
+
     res.status(200).json({
       message: "Signed in successfully",
       payload: {
         email,
         role: user.role,
         username: user.username,
+        life:JWT_LIFE
       },
     });
   } catch (error) {

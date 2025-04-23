@@ -22,7 +22,6 @@ export const getExpenseItems = async (req, res) => {
       secondarycategory,
     } = req.query;
 
-
     const user = res.locals.userId;
 
     if (!startDate) {
@@ -48,7 +47,6 @@ export const getExpenseItems = async (req, res) => {
       offset = 0;
     }
 
-
     const result = await expenseRepository.getExpenseItems(
       user,
       startDate,
@@ -59,7 +57,13 @@ export const getExpenseItems = async (req, res) => {
       limit
     );
 
-    const rowCount = await expenseRepository.getExpenseCount(user, startDate, endDate,primarycategory,secondarycategory)
+    const rowCount = await expenseRepository.getExpenseCount(
+      user,
+      startDate,
+      endDate,
+      primarycategory,
+      secondarycategory
+    );
 
     if (result.result === "failed") {
       return res.status(500).json({ message: "Internal server error" });
@@ -71,10 +75,9 @@ export const getExpenseItems = async (req, res) => {
       return res.status(200).json({
         message: `${rowCount?.payload?.totalRows} Expenses found`,
         data: {
-          rowCount:rowCount?.payload?.totalRows,
-          payload:result.payload,
+          rowCount: rowCount?.payload?.totalRows,
+          payload: result.payload,
         },
-        
       });
     }
   } catch (error) {
@@ -85,7 +88,7 @@ export const getExpenseItems = async (req, res) => {
 
 export const getExpenseSummaryPrimary = async (req, res) => {
   try {
-    let { startDate, endDate } = req.body;
+    let { startDate, endDate } = req.query;
     const user = res.locals.userId;
 
     if (!startDate) {
@@ -101,7 +104,6 @@ export const getExpenseSummaryPrimary = async (req, res) => {
       startDate,
       endDate
     );
-
 
     if (result.result === "failed") {
       return res.status(500).json({ message: "Internal server error" });
@@ -123,7 +125,7 @@ export const getExpenseSummaryPrimary = async (req, res) => {
 
 export const getExpenseSummarySecondary = async (req, res) => {
   try {
-    let { startDate, endDate } = req.body;
+    let { startDate, endDate } = req.query;
 
     let { primaryCategory } = req.params;
 
@@ -147,7 +149,6 @@ export const getExpenseSummarySecondary = async (req, res) => {
       startDate,
       endDate
     );
-
 
     if (result.result === "failed") {
       return res.status(500).json({ message: "Internal server error" });
@@ -179,7 +180,7 @@ export const getExpenseSummarySecondary = async (req, res) => {
 export const addExpense = async (req, res) => {
   try {
     let { date, amount, expense, category } = req.body;
-
+    
     if (!expense || !amount) {
       return res
         .status(400)
@@ -214,7 +215,7 @@ export const addExpense = async (req, res) => {
         .json({ message: "Expense added successfully", data: result.payload });
     }
   } catch (error) {
-    console.log("Add expense error",error);
+    console.log("Add expense error", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -254,7 +255,8 @@ export const bulkAddExpense = async (req, res) => {
  */
 export const updateExpense = async (req, res) => {
   try {
-    let { date, amount, expense, category } = req.body;
+    let { created, amount, expense, primarycategory, secondarycategory } =
+      req.body;
     const { id } = req.params;
 
     if (!expense || !amount) {
@@ -263,11 +265,15 @@ export const updateExpense = async (req, res) => {
         .json({ message: "Expense and amount are required" });
     }
 
-    if (!date) {
+    if (!created) {
       return res.status(400).json({ message: "date required" });
     }
 
-    if (!category) {
+    if (!primarycategory) {
+      category = "Categorization pending";
+    }
+
+    if (!secondarycategory) {
       category = "Categorization pending";
     }
 
@@ -277,13 +283,14 @@ export const updateExpense = async (req, res) => {
       id,
       expense,
       amount,
-      category,
-      date,
+      primarycategory,
+      secondarycategory,
+      created,
       user
     );
 
     if (result.result === "failed") {
-      return res.status(500).json({ message: response.message });
+      return res.status(500).json({ message: result.message });
     }
 
     if (result.result === "success") {
@@ -314,7 +321,7 @@ export const deleteExpense = async (req, res) => {
     const result = await expenseRepository.deleteExpense(id, user);
 
     if (result.result === "failed") {
-      return res.status(500).json({ message: response.message });
+      return res.status(500).json({ message: result.message });
     }
 
     if (result.result === "success") {
