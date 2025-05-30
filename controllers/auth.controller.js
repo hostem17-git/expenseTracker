@@ -4,6 +4,11 @@ import { JWT_LIFE } from "../config/jwt.config.js";
 import { pool } from "../config/db.config.js";
 
 import userRepository from "../repositories/user.repository.js";
+import twilioClient from "../config/twilio.client.js";
+
+
+
+const otpStore = new Map();
 
 export const signin = async (req, res) => {
   const { email, password } = req.body;
@@ -45,14 +50,13 @@ export const signin = async (req, res) => {
       sameSite: "lax",
     });
 
-
     res.status(200).json({
       message: "Signed in successfully",
       payload: {
         email,
         role: user.role,
         username: user.username,
-        life:JWT_LIFE
+        life: JWT_LIFE,
       },
     });
   } catch (error) {
@@ -112,4 +116,59 @@ export const signout = (req, res) => {
     console.log("Error during signout", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
+};
+
+export const sendOTP = async (req, res) => {
+  const { phoneNumber } = req.body;
+
+  if (!phoneNumber) {
+    return res.status(400).json({ message: "Phone number is required" });
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = Date.now() + 5 * 60 * 1000; // OTP valid for 5 minutes
+
+  // Store in memory
+  otpStore.set(phoneNumber, { otp, expiresAt });
+
+  try {
+    await twilioClient.messages.create({
+      to: `whatsapp:${phoneNumber}`,
+      from: process.env.TWILIO_WHATSAPP_NUMBER,
+      body: `Your OTP is ${otp}. It is valid for 5 minutes.`,
+    });
+
+    console.log(`OTP ${otp} sent to ${phoneNumber}`);
+    res.status(200).json({ message: "OTP sent successfully" });
+
+  } catch (error) {
+    console.error("Error sending OTP:", error.message);
+    res.status(500).json({ message: "Failed to send OTP" });
+  }
+};
+
+export const verifyOTP = (req, res) => {
+  const { phoneNumber, otp } = req.body;
+
+  if (!phoneNumber || !otp) {
+    return res.status(400).json({ message: "Phone number and OTP are required" });
+  }
+
+  const record = otpStore.get(phoneNumber);
+
+  if (!record) {
+    return res.status(400).json({ message: "No OTP found for this number" });
+  }
+
+  if (Date.now() > record.expiresAt) {
+    otpStore.delete(phoneNumber);
+    return res.status(400).json({ message: "OTP expired. Please request a new one." });
+  }
+
+  if (record.otp !== otp) {
+    return res.status(400).json({ message: "Invalid OTP" });
+  }
+
+  otpStore.delete(phoneNumber); // Clean up on success
+  return res.status(200).json({ message: "OTP verified successfully" });
 };
