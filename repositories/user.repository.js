@@ -43,6 +43,50 @@ class userRepository {
     return response;
   }
 
+
+
+  async addUserWithNumber(phoneNumber) {
+    let client;
+
+    let response = {
+      result: "pending",
+      message: "",
+      payload: null,
+    };
+
+    try {
+      client = await pool.connect();
+      await client.query("BEGIN");
+
+      const query = `
+            INSERT INTO users (contactnumber)
+            VALUES ($1)
+            RETURNING userid,contactnumber;
+      `;
+
+      const values = [phoneNumber];
+      const result = await client.query(query, values);
+      console.log("Added user:", result.rows[0]);
+
+      response.result = "success";
+      response.message = "User added successfully";
+      response.payload = result.rows[0];
+
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      console.log("Error writing user to db", error);
+      response.result = "failed";
+      response.message = "Error adding user";
+      response.payload = error;
+    } finally {
+      if (client) {
+        client.release();
+      }
+    }
+    return response;
+  }
+
   //   TODO:Test for non existing user.
   async getUserByEmailWithPassword(email) {
     let client;

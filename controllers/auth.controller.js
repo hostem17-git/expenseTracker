@@ -6,8 +6,6 @@ import { pool } from "../config/db.config.js";
 import userRepository from "../repositories/user.repository.js";
 import twilioClient from "../config/twilio.client.js";
 
-
-
 const otpStore = new Map();
 
 export const signin = async (req, res) => {
@@ -125,6 +123,11 @@ export const sendOTP = async (req, res) => {
     return res.status(400).json({ message: "Phone number is required" });
   }
 
+  const phoneRegex = /^\+[1-9]\d{1,14}$/;
+  if (!phoneRegex.test(phoneNumber)) {
+    return res.status(400).json({ message: "Invalid phone number format" });
+  }
+
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const expiresAt = Date.now() + 5 * 60 * 1000; // OTP valid for 5 minutes
 
@@ -140,18 +143,30 @@ export const sendOTP = async (req, res) => {
 
     console.log(`OTP ${otp} sent to ${phoneNumber}`);
     res.status(200).json({ message: "OTP sent successfully" });
-
   } catch (error) {
     console.error("Error sending OTP:", error.message);
     res.status(500).json({ message: "Failed to send OTP" });
   }
 };
 
-export const verifyOTP = (req, res) => {
+export const verifyOTP = async (req, res) => {
   const { phoneNumber, otp } = req.body;
 
   if (!phoneNumber || !otp) {
-    return res.status(400).json({ message: "Phone number and OTP are required" });
+    return res
+      .status(400)
+      .json({ message: "Phone number and OTP are required" });
+  }
+
+  const phoneRegex = /^\+[1-9]\d{1,14}$/;
+  if (!phoneRegex.test(phoneNumber)) {
+    return res.status(400).json({ message: "Invalid phone number format" });
+  }
+
+  if (!/^\d{6}$/.test(otp)) {
+    return res.status(400).json({
+      message: "OTP must be 6 digits",
+    });
   }
 
   const record = otpStore.get(phoneNumber);
@@ -162,7 +177,9 @@ export const verifyOTP = (req, res) => {
 
   if (Date.now() > record.expiresAt) {
     otpStore.delete(phoneNumber);
-    return res.status(400).json({ message: "OTP expired. Please request a new one." });
+    return res
+      .status(400)
+      .json({ message: "OTP expired. Please request a new one." });
   }
 
   if (record.otp !== otp) {
@@ -170,5 +187,47 @@ export const verifyOTP = (req, res) => {
   }
 
   otpStore.delete(phoneNumber); // Clean up on success
-  return res.status(200).json({ message: "OTP verified successfully" });
+
+  let result = await userRepository.getUserByNumber(phoneNumber);
+
+  if (result.result === "failed") {
+    if (result.message == "No user found") {
+      const addToDB = await userRepository.addUserWithNumber(phoneNumber);
+
+      if (addToDB.result === "success") {
+        result = addToDB.payload;
+      } else {
+        return res.status(500).json({ message: "Unable to add user" });
+      }
+      // TODO: Create user if not found.
+    } else {
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  }
+
+  const user = result.payload;
+
+  const token = jwt.sign(
+    {
+      userId: user.userid,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: JWT_LIFE,
+    }
+  );
+
+  res.cookie("token", token, {
+    maxAge: JWT_LIFE * 1000,
+    sameSite: "lax",
+  });
+
+  res.status(200).json({
+    message: "Signed in successfully",
+    payload: {
+      role: user.role,
+      username: user?.username || "User",
+      life: JWT_LIFE,
+    },
+  });
 };

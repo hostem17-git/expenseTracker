@@ -1,6 +1,7 @@
 import twilio from "twilio";
 
 export const whatsAppMiddleWare = async (req, res, next) => {
+  return next();
   try {
     const twilioSignature = req.headers["x-twilio-signature"];
     const webhookUrl = process.env.TWILIO_WEBHOOK_URL;
