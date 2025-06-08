@@ -3,7 +3,7 @@ import cors from "cors";
 const allowedOrigins = [
     // Production frontend
     // "http://192.168.1.35:5173",
-    "https://whatspense.netlify.app/",
+    "https://whatspense.netlify.app",
     "http://116.203.134.67", // Allowed IP 1
     "http://116.203.129.16", // Allowed IP 2
     "http://23.88.105.37", // Allowed IP 3
