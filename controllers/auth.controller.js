@@ -118,7 +118,6 @@ export const signout = (req, res) => {
 
 export const sendOTP = async (req, res) => {
   const { phoneNumber } = req.body;
-
   if (!phoneNumber) {
     return res.status(400).json({ message: "Phone number is required" });
   }
@@ -228,6 +227,7 @@ export const verifyOTP = async (req, res) => {
       role: user.role,
       username: user?.username || "User",
       life: JWT_LIFE,
+      access_token: token,
     },
   });
 };
